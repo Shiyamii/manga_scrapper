@@ -1,0 +1,25 @@
+# Use root/example as user/password credentials
+version: '3.1'
+services:
+  db:
+    image: mysql
+    restart: always
+    container_name: db-manga
+    environment:
+      MYSQL_USER: adminer
+      MYSQL_PASSWORD: test
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: example
+
+    volumes:
+      - ./db:/var/lib/mysql
+    ports:
+      - 3310:3306
+
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: db-manga
+    ports:
+      - 7788:8080

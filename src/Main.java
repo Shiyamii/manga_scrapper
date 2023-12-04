@@ -3,9 +3,9 @@ import mangaAPI.*;
 import java.util.ArrayList;
 
 public class Main {
+    static boolean insertOtherData = false;
+    static boolean createDB = true;
     public static void main(String[] args){
-        boolean createDB = true;
-
 
 
         String[] mangas = {
@@ -36,7 +36,7 @@ public class Main {
                 "One-Punch Man",
                 "GTO - Great Teacher Onizuka"};
 
-        MangaAPI m = new MangaAPI(mangas);
+        MangaAPI m = new MangaAPI(mangas,false);
 
         m.makesMangas();
 
@@ -47,11 +47,11 @@ public class Main {
         if(createDB){
             db.executeInsertSQL(s.dropTables());
             db.executeInsertSQL(s.initTables());
-            db.executeInsertSQL(s.initTablesCompl());
+            if(insertOtherData) db.executeInsertSQL(s.initTablesCompl());
 
             SQLFileWriter.writeFile("dropTables",s.dropTables());
             ArrayList<String> sqlTables = s.initTables();
-            sqlTables.addAll(s.initTablesCompl());
+            if(insertOtherData) sqlTables.addAll(s.initTablesCompl());
             SQLFileWriter.writeFile("creationTables",sqlTables);
 
         }
@@ -72,24 +72,23 @@ public class Main {
         }
         SQLFileWriter.writeFile("insertValues",sqlInserts);
 
-        ArrayList<String> sqlOtherData =new ArrayList<>();
+        if(insertOtherData) {
+            ArrayList<String> sqlOtherData = new ArrayList<>();
 
-        sqlOtherData.addAll(s.addQuotes(m.importQuote()));
-        sqlOtherData.addAll(s.genStock());
-        sqlOtherData.addAll(s.addAdmin());
-        sqlOtherData.addAll(s.addAccount());
-        db.executeInsertSQL(sqlOtherData);
+            sqlOtherData.addAll(s.addQuotes(m.importQuote()));
+            sqlOtherData.addAll(s.genStock());
+            sqlOtherData.addAll(s.addAdmin());
+            sqlOtherData.addAll(s.addAccount());
+            db.executeInsertSQL(sqlOtherData);
 
-        SQLFileWriter.writeFile("insertOtherData",sqlOtherData);
+            SQLFileWriter.writeFile("insertOtherData", sqlOtherData);
 
-        ArrayList<String> sqlOtherData2 =new ArrayList<>();
-        sqlOtherData2.addAll(s.addFactures());
+            ArrayList<String> sqlOtherData2 = new ArrayList<>();
+            sqlOtherData2.addAll(s.addFactures());
 
-        db.executeInsertSQL(sqlOtherData2);
-        SQLFileWriter.writeFile("insertOtherData2",sqlOtherData2);
-
-
-
+            db.executeInsertSQL(sqlOtherData2);
+            SQLFileWriter.writeFile("insertOtherData2", sqlOtherData2);
+        }
 
         db.close();
     }

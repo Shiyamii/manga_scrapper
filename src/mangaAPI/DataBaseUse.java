@@ -1,8 +1,10 @@
 package mangaAPI;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import utils.PropLoader;
 
 public class DataBaseUse {
 
@@ -10,14 +12,14 @@ public class DataBaseUse {
 
     public DataBaseUse(){
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+            conn = DriverManager.getConnection(PropLoader.getProp("DATABASE"), PropLoader.getProp("DATABASE_USER"), PropLoader.getProp("DATABASE_PASSWORD"));
+        } catch (SQLException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
-        }
-        try {
-            conn = DriverManager.getConnection("jdbc:mysql://ip:3306/db", "p3", "FicsiT22!");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
 
 

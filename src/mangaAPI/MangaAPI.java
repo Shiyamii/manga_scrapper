@@ -24,9 +24,11 @@ import java.util.logging.Level;
 
 public class MangaAPI {
     private String[] animeNames;
+    private boolean downloadImages;
     public ArrayList<Manga> mangas = new ArrayList<>();
 
-    public MangaAPI(String[] animeNames){
+    public MangaAPI(String[] animeNames, boolean downloadImages){
+        this.downloadImages = downloadImages;
         this.animeNames = animeNames;
     }
 
@@ -150,15 +152,17 @@ public class MangaAPI {
                 String prixAchat = o.get("prixAchat").toString();
                 String prixPublic = o.get("prixPublic").toString();
                 String editeur = o.get("editeur").toString();
-                Object editeurImageObj = o.get("editeurImage");
-                String  editeurImage = null;
-                if(editeurImageObj != null){
-                    editeurImage = editeurImageObj.toString();
-                }
                 String desc = o.get("desc").toString();
-                JSONArray a = (JSONArray) o.get("images");
-                for(int j = 0;j<a.size();j++){
-                    images.add(a.get(j).toString());
+                String editeurImage = null;
+                if(downloadImages){
+                    Object editeurImageObj = o.get("editeurImage");
+                    if(editeurImageObj != null){
+                        editeurImage = editeurImageObj.toString();
+                    }
+                    JSONArray a = (JSONArray) o.get("images");
+                    for(int j = 0;j<a.size();j++){
+                        images.add(a.get(j).toString());
+                    }
                 }
                 manga.addTome(new Tome(nomTome,numTome,dateParution,prixPublic,prixAchat,editeur,editeurImage,desc,images));
             }
@@ -199,25 +203,28 @@ public class MangaAPI {
                 return null;
             }
             String editeur = tome.select("div.liste_infos>ul.mb10>li.first>span>a>span").text();
-            String imageEditeur = tome.select("div.liste_infos>ul.mb10>li.first> span:nth-of-type(2)>a").get(0).absUrl("href");
-            imageEditeur = downloadPublisherImage(imageEditeur);
             String desc = tome.select("div.description").text();
+            String imageEditeur = null;
             ArrayList<String> lienImage = new ArrayList<>();
-            Elements imageLinks = tome.select("div.image_fiche");
-            int n = 1;
-            for(Element e : imageLinks.get(0).children()){
-                if(!e.absUrl("href").isEmpty()&&!e.className().equals("tbn preview")){
-                    String link = e.absUrl("href");
-                    if(link.contains("www.nautiljon.com")){
-                        link = link.replace("\\", "");
-                        int i = link.indexOf('?');
-                        if(i>-1){
-                            link = link.substring(0,i);
-                        }
-                        String lien = downloadImage(link,n,numTome,nomRepo);
-                        n++;
-                        if(lien != null){
-                            lienImage.add(lien);
+            if(downloadImages) {
+                imageEditeur = tome.select("div.liste_infos>ul.mb10>li.first> span:nth-of-type(2)>a").get(0).absUrl("href");
+                imageEditeur = downloadPublisherImage(imageEditeur);
+                Elements imageLinks = tome.select("div.image_fiche");
+                int n = 1;
+                for (Element e : imageLinks.get(0).children()) {
+                    if (!e.absUrl("href").isEmpty() && !e.className().equals("tbn preview")) {
+                        String link = e.absUrl("href");
+                        if (link.contains("www.nautiljon.com")) {
+                            link = link.replace("\\", "");
+                            int i = link.indexOf('?');
+                            if (i > -1) {
+                                link = link.substring(0, i);
+                            }
+                            String lien = downloadImage(link, n, numTome, nomRepo);
+                            n++;
+                            if (lien != null) {
+                                lienImage.add(lien);
+                            }
                         }
                     }
                 }
